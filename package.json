@@ -1,0 +1,21 @@
+{
+  "name": "puppeteer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Antholife/test-mds.git"
+  },
+  "private": true,
+  "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "puppeteer": "^22.9.0"
+  },
+  "dependencies": {
+    "chalk": "4.1.2"
+  }
+}
