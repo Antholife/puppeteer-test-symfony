@@ -1,3 +1,10 @@
+Before, you start, make sure you have the following installed:
+- Node.js
+- npm
+
+To install the dependencies, run the following command:
+```npm install```
+
 To run the tests, simply execute the following command:
 ```npm run test```
 
