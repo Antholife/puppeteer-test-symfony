@@ -102,8 +102,10 @@ const registrationTest = async (page) => {
     await page.type('input[id="registration_form_username"]', username);
     await page.type('input[id="registration_form_plainPassword"]', password);
     await page.click('input[id="registration_form_agreeTerms"]');
-    await page.click('button[type="submit"]');
-    await page.waitForNavigation();
+    await Promise.all([
+        page.waitForNavigation(),
+        page.click('button[type="submit"]')
+    ]);
     assert.strictEqual(page.url(), 'http://127.0.0.1:8000/task/', chalk.red('---> Failed\n'));
     console.log(chalk.green('---> Success\n'));
 
@@ -112,9 +114,10 @@ const registrationTest = async (page) => {
 
 const logoutTest = async (page) => {
     console.log(chalk.blue('-> Test Logout'));
-    page.click('a[href="/logout"]');
-    await page.waitForNavigation();
-    await page.waitForNavigation();
+    await Promise.all([
+        page.waitForNavigation(),
+        page.click('a[href="/logout"]')
+    ]);
     assert.strictEqual(page.url(), 'http://127.0.0.1:8000/login', chalk.red('---> Failed\n'));
     console.log(chalk.green('---> Success\n'));
 }
@@ -172,19 +175,25 @@ const loginTest = async (page, username, password) => {
     await resetField(page, inputPassword);
     await page.type('input[id="username"]', username);
     await page.type('input[id="password"]', password);
-    await page.click('button[type="submit"]');
-    await page.waitForNavigation();
+    await Promise.all([
+        page.waitForNavigation(),
+        page.click('button[type="submit"]'),
+    ]);
     assert.strictEqual(page.url(), 'http://127.0.0.1:8000/task/', chalk.red('---> Failed\n'));
     console.log(chalk.green('---> Success\n'));
 }
 
 const backToTask = async (page) => {
     console.log(chalk.cyan('-> Back to task list'));
-    await page.click('a[href="/task/new"]');
-    await page.waitForNavigation();
+    await Promise.all([
+        page.waitForNavigation(),
+        page.click('a[href="/task/new"]'),
+    ]);
     assert.strictEqual(page.url(), 'http://127.0.0.1:8000/task/new', chalk.red('---> Failed\n'));
-    await page.click('button[type="button"]');
-    await page.waitForNavigation();
+    await Promise.all([
+        page.waitForNavigation(),
+        page.click('button[type="button"]'),
+    ]);
     assert.strictEqual(page.url(), 'http://127.0.0.1:8000/task/', chalk.red('---> Failed\n'));
     console.log(chalk.green('---> Success\n'));
 }
@@ -201,8 +210,10 @@ const taskTest = async (page, onlyCreate) => {
     let updateStatus = faker.lorem.word();
 
     !onlyCreate && console.log(chalk.cyan('--> Create task'));
-    await page.click('a[href="/task/new"]');
-    await page.waitForNavigation();
+    await  Promise.all([
+        page.waitForNavigation(),
+        page.click('a[href="/task/new"]'),
+    ]);
     await page.type('input[name="task[title]"]', title);
     await page.type('input[name="task[description]"]', description);
     const inputDateSelector = 'input[name="task[date]"]';
@@ -211,8 +222,10 @@ const taskTest = async (page, onlyCreate) => {
     }, date.toISOString().slice(0, 16));
     await page.type('input[name="task[status]"]', status);
 
-    await page.click('button[class="btn btn-lg btn-primary primary"]');
-    await page.waitForNavigation();
+    await Promise.all([
+        page.waitForNavigation(),
+        page.click('button[class="btn btn-lg btn-primary primary"]')
+    ]);
 
     let taskTitle = await page.$eval('table > tbody tr:last-child td:nth-child(2)', element => element.textContent);
     assert.strictEqual(taskTitle, title, chalk.red('---> Failed\n'));
@@ -233,9 +246,11 @@ const taskTest = async (page, onlyCreate) => {
 
         let taskID = await page.$eval('table > tbody tr:last-child td:nth-child(1)', element => element.textContent);
 
-        await page.click('a[href="/task/' + taskID + '"]');
+        await Promise.all([
+            page.waitForNavigation(),
+            page.click('a[href="/task/' + taskID + '"]'),
+        ]);
 
-        await page.waitForNavigation();
         let taskCID = await page.$eval('table > tbody tr:nth-child(1) td', element => element.textContent);
         assert.strictEqual(taskCID, taskID, chalk.red('---> Failed\n'));
 
@@ -255,8 +270,10 @@ const taskTest = async (page, onlyCreate) => {
         console.log(chalk.green('---> Success\n'));
         console.log(chalk.cyan('--> Edit update task'));
 
-        await page.click('button[class="btn secondary"]');
-        await page.waitForNavigation();
+        await Promise.all([
+            page.waitForNavigation(),
+            page.click('button[class="btn secondary"]'),
+        ]);
         await page.$eval('input[name="task[title]"]', (element, updateTitle) => {
             element.value = updateTitle
         }, updateTitle);
@@ -274,8 +291,10 @@ const taskTest = async (page, onlyCreate) => {
         }, updateStatus);
 
 
-        await page.click('form[name="task"] button');
-        await page.waitForNavigation();
+        await Promise.all([
+            page.waitForNavigation(),
+            page.click('form[name="task"] button'),
+        ]);
         taskTitle = await page.$eval('table > tbody tr:last-child td:nth-child(2)', element => element.textContent);
         assert.strictEqual(taskTitle, updateTitle, chalk.red('---> Failed\n'));
 
@@ -301,8 +320,10 @@ const taskTest = async (page, onlyCreate) => {
             }
         });
 
-        await page.click('form[action="/task/' + taskID + '"] button');
-        await page.waitForNavigation();
+        await Promise.all([
+            page.waitForNavigation(),
+            page.click('form[action="/task/' + taskID + '"] button'),
+        ]);
 
         taskCID = await page.$eval('table > tbody tr:last-child td:nth-child(1)', element => element.textContent);
         assert.notEqual(taskCID, taskID, chalk.red('---> Failed\n'));
@@ -346,8 +367,10 @@ const checkSecurityURL = async (page, browser) => {
 
     console.log(chalk.cyan('--> Access to task page with unauthenticated user'));
     const taskID = await taskTest(page, true);
-    await page.click('a[href="/logout"]');
-    await page.waitForNavigation();
+    await Promise.all([
+        page.waitForNavigation(),
+        page.click('a[href="/logout"]'),
+    ]);
     await page.goto('http://127.0.0.1:8000/task');
     assert.strictEqual(page.url(), 'http://127.0.0.1:8000/login', chalk.red('---> Failed\n'));
     await page.goto('http://127.0.0.1:8000/task/new');
